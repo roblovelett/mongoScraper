@@ -27,7 +27,7 @@ app.use(bodyParser.urlencoded({
 app.use(express.static("public"));
 
 // Database configuration with mongoose
-mongoose.connect(config.mongodb_uri);
+mongoose.connect( /*config.mongodb_uri ||*/ 'mongodb://localhost/scraped');
 var db = mongoose.connection;
 
 // Show any mongoose errors
