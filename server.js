@@ -26,7 +26,7 @@ app.use(bodyParser.urlencoded({
 app.use(express.static("public"));
 
 // Database configuration with mongoose
-mongoose.connect("mongodb://localhost/scraper" || config.mongodb_uri);
+mongoose.connect(config.mongodb_uri || 'mongodb://localhost/scraper');
 var db = mongoose.connection;
 
 // Show any mongoose errors
