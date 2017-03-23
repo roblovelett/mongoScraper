@@ -2,6 +2,7 @@
 var express = require("express");
 var bodyParser = require("body-parser");
 var logger = require("morgan");
+var http = require("http");
 var mongoose = require("mongoose");
 // Required Models
 var config = require('./config');
@@ -26,7 +27,7 @@ app.use(bodyParser.urlencoded({
 app.use(express.static("public"));
 
 // Database configuration with mongoose
-mongoose.connect(config.mongodb_uri || 'mongodb://localhost/scraper');
+mongoose.connect(/*config.mongodb_uri ||*/ 'mongodb://localhost/scraped');
 var db = mongoose.connection;
 
 // Show any mongoose errors
@@ -41,26 +42,20 @@ db.once("open", function () {
 
 // Routes
 // ======
-// A GET request to scrape the echojs website
-app.get("/scrape", function (req, res) {
-  // First, we grab the body of the html with request
+console.log("Grabbing from echojs...\n");
+
   request("http://www.echojs.com/", function (error, response, html) {
     // Then, we load that into cheerio and save it to $ for a shorthand selector
     var $ = cheerio.load(html);
+    var result = {};
     // Now, we grab every h2 within an article tag, and do the following:
     $("article h2").each(function (i, element) {
-
-      // Save an empty result object
-      var result = {};
-
       // Add the text and href of every link, and save them as properties of the result object
       result.title = $(this).children("a").text();
       result.link = $(this).children("a").attr("href");
-
       // Using our Article model, create a new entry
       // This effectively passes the result object to the entry (and the title and link)
       var entry = new Article(result);
-
       // Now, save that entry to the db
       entry.save(function (err, doc) {
         // Log any errors
@@ -72,12 +67,14 @@ app.get("/scrape", function (req, res) {
           console.log(doc);
         }
       });
-
     });
+     // Tell the browser that we finished scraping the text
+  console.log(result);
   });
-  // Tell the browser that we finished scraping the text
-  res.send("Scrape Complete");
-});
+
+// A GET request to scrape the echojs website
+//app.get("/scrape", function (req, res) {
+//});
 
 // This will get the articles we scraped from the mongoDB
 app.get("/articles", function (req, res) {
